@@ -5,7 +5,7 @@ IDE: IntelliJ IDEA (JetBrains).
 Framework: Spring Boot 3.5.x with Java 21.
 Database: PostgreSQL (Use H2 in-memory database strictly for initial local testing, migrating to Postgres for production).
 Data Access: Spring Data JPA / Hibernate.
-Security: Spring Security with JWT (JSON Web Tokens) for stateless authentication.
+Security: Spring Security with Session-Based Authentication (Form Login) for stateful session management.
 External Data Providers: * Steam Web API: The core engine. Used for fetching user owned games, static achievement schemas, and user unlock timestamps.
 RAWG.io / IGDB: For data enrichment (fetching high-quality cover art, since Steam's default grid images can be low-res).
 Part 2: Database Design & Entity Relationships
@@ -15,8 +15,9 @@ Achievement Entity (The Blueprint): Stores the static definition of an achieveme
 UnlockedAchievement (The Event): An intermediate entity tracking exactly when a specific user earned a specific achievement.
 Part 3: Step-by-Step Implementation Plan
 Step 1: Account Creation & Linking Steam
-Action: The user registers, logs in, and saves their public Steam ID to their profile.
-How it works: Spring Boot secures the password with BCrypt and issues a JWT. The frontend attaches this token for future requests.
+Action: The user registers, logs in via the default Spring login form, and saves their public Steam ID.
+How it works: You will build a registration endpoint. Once registered, the user logs in. Spring Boot's default formLogin() handles the credential check, establishes a secure server-side session,
+and issues a JSESSIONID cookie to the client. Subsequent requests are authenticated automatically via this cookie.
 Step 2: Fetching the Game Library (Data Ingestion)
 Action: The user clicks "Sync Steam Library."
 How it works: Using Spring's modern RestClient, your backend calls the Steam API's GetOwnedGames endpoint. It extracts the AppIDs, checks if those games exist in your Game table, and saves any new ones so your system knows they exist.
@@ -36,24 +37,23 @@ Interactive Documentation: Integrate springdoc-openapi to auto-generate a Swagge
 Deployment: Containerize the Spring Boot app with a Dockerfile and deploy the Postgres database and app to a cloud provider like Render, Railway, or Fly.io.
 
 Part 5: Updated File Structure
-Plaintext
-game-tracker/
+game-library/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/tracker/
 │   │   │   ├── config/            
-│   │   │   │   ├── SecurityConfig.java
+│   │   │   │   ├── SecurityConfig.java            # Updated with your new Session/Form Login code
 │   │   │   │   ├── OpenApiConfig.java
 │   │   │   │   └── RestClientConfig.java
 │   │   │   ├── controller/        
-│   │   │   │   ├── AuthController.java
+│   │   │   │   ├── AuthController.java            # Now only needs to handle Account Registration
 │   │   │   │   ├── GameController.java
 │   │   │   │   └── AchievementController.java
 │   │   │   ├── service/           
-│   │   │   │   ├── AuthService.java
-│   │   │   │   ├── SteamApiService.java       # Handles GetOwnedGames & GetPlayerAchievements
-│   │   │   │   ├── MetadataService.java       # RAWG/IGDB logic
-│   │   │   │   └── SyncService.java           # Orchestrates the database saving logic
+│   │   │   │   ├── AuthService.java               # Handles password hashing and saving new users
+│   │   │   │   ├── SteamApiService.java       
+│   │   │   │   ├── MetadataService.java       
+│   │   │   │   └── SyncService.java           
 │   │   │   ├── repository/        
 │   │   │   │   ├── UserRepository.java
 │   │   │   │   ├── GameRepository.java
@@ -64,24 +64,19 @@ game-tracker/
 │   │   │   │   ├── User.java
 │   │   │   │   ├── Game.java
 │   │   │   │   ├── Achievement.java
-│   │   │   │   └── UserAchievement.java
+│   │   │   │   ├── UserAchievement.java
 │   │   │   │   └── UserGame.java
 │   │   │   ├── dto/               
-│   │   │   │   ├── auth/
-│   │   │   │   ├── steam/                     # JSON mapping records for Steam API
+│   │   │   │   ├── auth/                          # Keep for RegistrationRequest DTO
+│   │   │   │   ├── steam/                     
 │   │   │   │   └── response/                 
-│   │   │   ├── exception/         
-│   │   │   │   ├── GlobalExceptionHandler.java
-│   │   │   │   ├── SteamProfilePrivateException.java
-│   │   │   │   └── ResourceNotFoundException.java
-│   │   │   └── security/          
-│   │   │       ├── JwtService.java
-│   │   │       └── JwtAuthenticationFilter.java
+│   │   │   └── exception/         
+│   │   │       ├── GlobalExceptionHandler.java
+│   │   │       ├── SteamProfilePrivateException.java
+│   │   │       └── ResourceNotFoundException.java
 │   │   └── resources/
 │   │       └── application.yml    
 │   └── test/                      
 ├── Dockerfile                     
 ├── docker-compose.yml             
-└── pom.xml                       
-Review
-
+└── pom.xml
