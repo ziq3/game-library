@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
+import java.util.Objects;
+
 @Configuration
 public class RestClientConfig {
 
@@ -13,8 +15,9 @@ public class RestClientConfig {
 
     @Bean
     public RestClient steamRestClient() {
+        String safeBaseUrl = Objects.requireNonNull(steamBaseUrl, "steam.api.base-url must not be null");
         return RestClient.builder()
-                .baseUrl(steamBaseUrl)
+            .baseUrl(safeBaseUrl)
                 .build();
     }
 }

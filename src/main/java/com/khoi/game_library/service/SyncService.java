@@ -11,6 +11,7 @@ import com.khoi.game_library.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -33,7 +34,9 @@ public class SyncService {
 
     @Transactional
     public int syncLibrary(UUID userId) {
-        User user = userRepository.findById(userId)
+        UUID safeUserId = Objects.requireNonNull(userId, "userId must not be null");
+
+        User user = userRepository.findById(safeUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
         if (user.getSteamId() == null || user.getSteamId().isBlank()) {
@@ -45,21 +48,23 @@ public class SyncService {
         int newGamesAdded = 0;
 
         for (SteamOwnedGamesResponse.SteamGame steamGame : response.response().games()) {
+            Long appId = Objects.requireNonNull(steamGame.appId(), "Steam appId must not be null");
+
             // Upsert the Game entity (create if it doesn't exist)
-            Game game = gameRepository.findById(steamGame.appId())
+            Game game = gameRepository.findById(appId)
                     .orElseGet(() -> {
                         Game newGame = new Game();
-                        newGame.setAppId(steamGame.appId());
+                        newGame.setAppId(appId);
                         newGame.setTitle(steamGame.name());
                         // Build Steam header image URL as default cover art
                         newGame.setCoverArtUrl(
-                                "https://cdn.akamai.steamstatic.com/steam/apps/" + steamGame.appId() + "/header.jpg"
+                                "https://cdn.akamai.steamstatic.com/steam/apps/" + appId + "/header.jpg"
                         );
                         return gameRepository.save(newGame);
                     });
 
             // Create UserGame link if it doesn't already exist
-            if (!userGameRepository.existsByUserIdAndGameAppId(userId, steamGame.appId())) {
+            if (!userGameRepository.existsByUserIdAndGameAppId(safeUserId, appId)) {
                 UserGame userGame = new UserGame();
                 userGame.setUser(user);
                 userGame.setGame(game);
@@ -68,7 +73,7 @@ public class SyncService {
                 newGamesAdded++;
             } else {
                 // Update playtime for existing entries
-                userGameRepository.findByUserIdAndGameAppId(userId, steamGame.appId())
+                userGameRepository.findByUserIdAndGameAppId(safeUserId, appId)
                         .ifPresent(existing -> {
                             existing.setPlaytimeForever(steamGame.playtimeForever());
                             userGameRepository.save(existing);
