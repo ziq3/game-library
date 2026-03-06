@@ -1,6 +1,7 @@
 package com.khoi.game_library.service;
 
 import com.khoi.game_library.dto.steam.SteamOwnedGamesResponse;
+import com.khoi.game_library.dto.steam.SteamPlayerAchievementsResponse;
 import com.khoi.game_library.exception.SteamProfilePrivateException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,5 +30,13 @@ public class SteamApiService {
         }
 
         return response;
+    }
+
+    public SteamPlayerAchievementsResponse getPlayerAchievements(String steamId, Long appId) {
+        return steamRestClient.get()
+                .uri("/ISteamUserStats/GetPlayerAchievements/v0001/?appid={appId}&key={key}&steamid={steamId}&l=en&format=json",
+                        appId, apiKey, steamId)
+                .retrieve()
+                .body(SteamPlayerAchievementsResponse.class);
     }
 }

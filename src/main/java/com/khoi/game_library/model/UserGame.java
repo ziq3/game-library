@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "user_games",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "app_id"}))
+    uniqueConstraints = @UniqueConstraint(columnNames = {"user_steam_id", "app_id"}))
 @Getter @Setter @NoArgsConstructor
 public class UserGame {
     @Id
@@ -15,7 +15,7 @@ public class UserGame {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_steam_id", referencedColumnName = "steam_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -7,7 +7,6 @@ import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -15,18 +14,7 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
-    @Column(nullable = false, unique = true)
-    private String username;
-
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @Column(nullable = false)
-    private String password;
-
+    @Column(name = "steam_id", nullable = false, unique = true)
     private String steamId;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

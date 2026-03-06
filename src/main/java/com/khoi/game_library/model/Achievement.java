@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "achievements")
+@Table(name = "achievements",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"app_id", "api_name"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,7 +24,7 @@ public class Achievement {
 
     @Column(columnDefinition = "TEXT")
     private String description;
-    private String iconUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "app_id", nullable = false)
     private Game game;

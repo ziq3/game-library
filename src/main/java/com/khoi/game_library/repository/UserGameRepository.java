@@ -5,10 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface UserGameRepository extends JpaRepository<UserGame, Long> {
-    List<UserGame> findByUserId(UUID userId);
-    Optional<UserGame> findByUserIdAndGameAppId(UUID userId, Long appId);
-    boolean existsByUserIdAndGameAppId(UUID userId, Long appId);
+    List<UserGame> findByUserSteamId(String steamId);
+    Optional<UserGame> findByUserSteamIdAndGameAppId(String steamId, Long appId);
+    boolean existsByUserSteamIdAndGameAppId(String steamId, Long appId);
 }

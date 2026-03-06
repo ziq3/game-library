@@ -5,10 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface UserAchievementRepository extends JpaRepository<UserAchievement, Long> {
-    List<UserAchievement> findByUserIdAndAchievementGameAppId(UUID userId, Long appId);
-    Optional<UserAchievement> findByUserIdAndAchievementId(UUID userId, Long achievementId);
-    boolean existsByUserIdAndAchievementId(UUID userId, Long achievementId);
+    List<UserAchievement> findByUserSteamIdAndAchievementGameAppId(String steamId, Long appId);
+    boolean existsByUserSteamIdAndAchievementGameAppId(String steamId, Long appId);
+    Optional<UserAchievement> findByUserSteamIdAndAchievementId(String steamId, Long achievementId);
+    boolean existsByUserSteamIdAndAchievementId(String steamId, Long achievementId);
 }

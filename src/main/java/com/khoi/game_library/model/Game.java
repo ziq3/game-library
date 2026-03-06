@@ -18,8 +18,6 @@ public class Game {
     @Column(nullable = false)
     private String title;
 
-    private String developer;
-    private String genre;
     private String coverArtUrl;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
